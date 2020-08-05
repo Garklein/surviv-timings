@@ -13,7 +13,12 @@ Now, on to instructions:
 
 # What do all the stuff mean?
 
-Current weapon delay, free switch delay and fps are self-explanatory. On the bottom, you can see 4 rows, with a bar and a square in the middle. This shows all your inputs and their consequences (this project was originally meant to be a way to practice underclock, and the bottom part was originally for seeing what was going wrong if it didn't work). Each row is a weapon (primary, secondary, melee, throwables), and it is ordered in the same way as surviv.io. The bar in the middle is current time. A black line that stretches from the bottom to the top of one row indicates an attack (shot/melee attack/throwable throw). A solid black rectangle outlined in white (doesn't reach all the way to the top or bottom of the row) is a delay (either firing or switch). While this rectangle is over the bar, it means the delay is still going on, and you can't fire. If it is a green rectangle, it means that it is the 250ms `free switch` delay. The grey background behind the delays shows where you've held your mouse down, regardless if it was on a delay (and didn't shoot) or not.
+Current weapon delay, free switch delay and fps are self-explanatory. On the bottom, you can see 4 rows, with a bar and a square in the middle. This shows all your inputs and their consequences (this project was originally meant to be a way to practice underclock, and the bottom part was originally for seeing what was going wrong if it didn't work).  
+Each row is a weapon (primary, secondary, melee, throwables), and it is ordered in the same way as surviv.io.  
+The bar in the middle is current time. 
+A black line that stretches from the bottom to the top of one row indicates an attack (shot/melee attack/throwable throw).  
+A solid black rectangle outlined in white (doesn't reach all the way to the top or bottom of the row) is a delay (either firing or switch). While this rectangle is over the bar, it means the delay is still going on, and you can't fire. If it is a green rectangle, it means that it is the 250ms `free switch` delay.  
+The grey background behind the delays shows where you've held your mouse down, regardless if it was on a delay (and didn't shoot) or not.
 
 # Keybinding
 
@@ -27,7 +32,8 @@ You can keybind in this project. To do so, open the console (ctrl-shift-i, and n
 * `equipPreviousWeapon`
 * `equipNextWeapon`
 
-**NB: when putting in the `name of key/mouse button`, make sure to surround it with either single or double quotes**  If you want to put in a key, go to http://keycode.info/, press the button, and look at the `event.key`. For mouse buttons, these have been set by me. They are:
+**NB: when putting in the `name of key/mouse button`, make sure to surround it with either single or double quotes**  
+If you want to put in a key, go to http://keycode.info/, press the button, and look at the `event.key`. For mouse buttons, these have been set by me. They are:
 * `leftMouse`
 * `middleMouse`
 * `rightMouse`
