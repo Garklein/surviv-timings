@@ -8,3 +8,16 @@ Here will be instructions on how to use this [project](https://garklein.github.i
 * If there is no `free switch`, or the `deploy groups` of your previous and current weapon match, your current weapon's `switch delay` is used
 * `Free switches` do not affect melee, melee just has a (version of) `shot delay` and no `switch delay`
 * Throwables are also not affected by free switches
+Now, on to instructions:
+
+# Keybinding
+
+You can keybind in this project. To do so, open the console (ctrl-shift-i, and navigage to the "console" tab). Keybinding follows the format `[name of bind] = [name of key/mouse button]`. Here is a list of keybinds:
+* `primary.bind` 
+* `secondary.bind` 
+* `melee.bind` 
+* `throwable.bind` 
+* `attack`
+* `equipOtherGun`
+* `equipPreviousWeapon`
+* `equipNextWeapon`
