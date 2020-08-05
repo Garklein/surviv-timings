@@ -1,7 +1,7 @@
 # Surviv timing simulator
 # THIS IS CURRENTLY A WORK IN PROGRESS
 
-Here will be instructions on how to use this [project](https://garklein.github.io/surviv-timings/survivsimulator). You can read about the logic behind the simulator from [Beyblade's guide](https://github.com/surviv-underclock/docs). To paraphrase:
+Here will be instructions on how to use [this project](https://garklein.github.io/surviv-timings/survivsimulator), which is a simulation of surviv.io's weapon switching and firing system. You can read about the logic behind the simulator from [Beyblade's guide](https://github.com/surviv-underclock/docs). To paraphrase:
 * Your initial switch in a game is a `free switch`
 * The next switch 1000ms or more after the last `free switch` will also be one
 * Some guns have `deploy groups`
