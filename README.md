@@ -23,9 +23,7 @@ You can keybind in this project. To do so, open the console (ctrl-shift-i, and n
 * `equipPreviousWeapon`
 * `equipNextWeapon`
 
-**NB: when putting in the `name of key/mouse button`, make sure to surround it with either single or double quotes**
-
-If you want to put in a key, go to http://keycode.info/, press the button, and look at the `event.key`. For mouse buttons, these have been set by me. They are:
+**NB: when putting in the `name of key/mouse button`, make sure to surround it with either single or double quotes**  If you want to put in a key, go to http://keycode.info/, press the button, and look at the `event.key`. For mouse buttons, these have been set by me. They are:
 * `leftMouse`
 * `middleMouse`
 * `rightMouse`
@@ -48,4 +46,12 @@ Weapons are objects. I have already touched on this a bit in keybinding. The obj
 * `attackDelay`. A number. This is the cooldown after firing.
 * `switchDelay`. A number. This is the default cooldown after switching.
 * `automatic`. A boolean value. This tells if the weapon is automatic or not.
-* `deployGroup`. Any type will work (though in surviv.io they are all numbers). This gun's deploy group. To make a gun not have a deploy group, use `undefined` (ex. `primary.deployGroup = undefined`).
+* `deployGroup`. Any type will work (though in surviv.io they are all numbers). This gun's `deploy group`. To make a gun not have a `deploy group`, use `undefined` (ex. `primary.deployGroup = undefined`).
+
+`Melee` only has the properties `attackDelay` and `automatic`, and `throwable` only has the property `automatic`. There are other properties, but you will probably screw something up if you play around with them ~~(I'm not saying you shouldn't)~~.
+
+To view all of these current weapon stats, type `weapons()`.
+
+# Time
+
+The `time` variable is the total amount of ms it will take for a point to go from the right side of the screen to the right. As with all other variables, you can edit it by typing in the console `variable = value`, and you can check its value by just typing its name in the console. Default for `time` is 7000.
