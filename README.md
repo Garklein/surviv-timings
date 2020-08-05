@@ -54,4 +54,4 @@ To view all of these current weapon stats, type `weapons()`.
 
 # Time
 
-The `time` variable is the total amount of ms it will take for a point to go from the right side of the screen to the right. As with all other variables, you can edit it by typing in the console `variable = value`, and you can check its value by just typing its name in the console. Default for `time` is 7000.
+The `time` variable is the total amount of milliseconds it will take for a point to go from the right side of the screen to the right. As with all other variables, you can edit it by typing in the console `variable = value`, and you can check its value by just typing its name in the console. Default for `time` is 7000.
