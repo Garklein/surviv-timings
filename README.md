@@ -13,7 +13,7 @@ Now, on to instructions:
 
 # Keybinding
 
-You can keybind in this project. To do so, open the console (ctrl-shift-i, and navigage to the "console" tab). Keybinding follows the format `[name of bind] = [name of key/mouse button]`. Here is a list of keybinds:
+You can keybind in this project. To do so, open the console (ctrl-shift-i, and navigage to the "console" tab). Keybinding follows the format `name of bind = name of key/mouse button`. Here is a list of keybinds:
 * `primary.bind` 
 * `secondary.bind` 
 * `melee.bind` 
@@ -35,3 +35,17 @@ If you want to put in a key, go to http://keycode.info/, press the button, and l
 Time for some examples: 
 * If you wanted to set primary to spacebar, you would type `primary.bind = " "`
 * If you wanted to set "equip other gun" to right click, you would type `equipOtherGun = "rightMouse"`
+
+To view your current keybinds, type `keybinds()`.
+
+# Setting weapon stats
+
+The default weapons are an M870 (in primary slot), and an AK-47 (in secondary slot). If you wanted to, for example, practice Mosin-Nagant + Desert Eagle desync, you would need different stats. 
+
+Weapon stats are also done in the console, and follow the format `weapon.property = value`.
+
+Weapons are objects. I have already touched on this a bit in keybinding. The object names are `primary`, `secondary`, `melee`, and `throwable`. Here is a list of gun properties:
+* `attackDelay`. A number. This is the cooldown after firing.
+* `switchDelay`. A number. This is the default cooldown after switching.
+* `automatic`. A boolean value. This tells if the weapon is automatic or not.
+* `deployGroup`. Any type will work (though in surviv.io they are all numbers). This gun's deploy group. To make a gun not have a deploy group, use `undefined` (ex. `primary.deployGroup = undefined`).
