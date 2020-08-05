@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Surviv Simulator Thingy</title>
+    <style type="text/css">
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+
+        canvas.height = window.innerHeight;
+        canvas.width = window.innerWidth;
+
+        var primary = {
+            attackDelay: 900,
+            switchDelay: 900,
+            y: window.innerHeight / 8 * 5,
+            bind: "1",
+            automatic: false,
+            deployGroup: 1
+        };
+        var secondary = {
+            attackDelay: 100,
+            switchDelay: 750,
+            y: window.innerHeight / 16 * 11,
+            bind: "2",
+            automatic: true,
+            deployGroup: undefined
+        };
+        var melee = {
+            attackDelay: 250,
+            y: window.innerHeight / 8 * 6,
+            bind: "e",
+            automatic: false
+        };
+        var throwable = {
+            y: window.innerHeight / 16 * 13,
+            bind: "4",
+            automatic: false
+        }
+        currentDelay = 0;
+        meleeDelay = 0;
+
+        var pressedKeys = [];
+
+        var equipOtherGun = " ";
+        var equipPreviousWeapon = "scrollUp"
+        var equipNextWeapon = "scrollDown";
+        var attack = "leftMouse";
+
+        var slots = [
+            primary,
+            secondary,
+            melee,
+            throwable      
+        ];
+        var roll = [];
+
+        var time = 7000;   
+        var currentSlot = 2;
+        var newTime  = new Date().getTime();
+        var oldTime;
+        var latestInterval;
+        var mousePosDown = false;
+        var firstClick = true;
+        var weaponNext;
+        var shotWidth = 15;
+        var border = 10;
+        var fps = {
+            total: 0,
+            frames: 0,
+            fps: 0
+        }
+        var priorityNum = 2;
+        var freeSwitchDelay = 0;
+
+        // Stops things popping up on right click
+        window.addEventListener("contextmenu", function(contextBad) {
+            contextBad.preventDefault();
+        });
+
+        window.addEventListener("mousedown", function(click) {
+            if (click.button == 1) {
+                click.preventDefault();
+            }
+            let mouseInput = processMouse(click);
+            processInput(mouseInput);
+        }, false);
+
+        // Automatic weapon stuff
+        window.addEventListener("mouseup", function(click) {
+            let mouseInput = processMouse(click);
+            processInputUp(mouseInput); 
+        }, false);
+        window.addEventListener("keyup", function(key) {
+            for (let i = 0; i < pressedKeys.length; i++) {
+                if (pressedKeys[i] == key.key) {
+                    pressedKeys.splice(i, 1);
+                    break;
+                }
+            }
+            processInputUp(key.key)
+        }, false);
+
+        function processInputUp(input) {
+            if (input == attack) {
+                mousePosDown = false;
+            } 
+        }
+
+        window.addEventListener("wheel", function(scroll) {
+            let objectThing;
+            if (scroll.deltaY < 0) {
+                processInput("scrollUp")
+            } else if (scroll.deltaY > 0) {
+                processInput("scrollDown")
+            }
+        }, false);
+
+        window.addEventListener("resize", function(){
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            for (let i = 0; i < slots.length; i++) {
+                slots[i].y = window.innerHeight / 16 * (10 + i);
+            }
+        })
+
+        window.addEventListener("keydown", function(key) {
+            processInput(key.key, true);
+        }, false);
+
+        function processMouse(click) {
+            let objectThing;
+            switch (click.button) {
+                case 0:
+                    mouseButton = "leftMouse";
+                    break;
+                case 1:
+                    mouseButton = "middleMouse";
+                    break;
+                case 2:
+                    mouseButton ="rightMouse";             
+            }
+            return(mouseButton);
+        }
+
+        function processInput(input, isKey) {
+            for (let i = 0; i < pressedKeys.length; i++) {
+                if (pressedKeys[i] == input) {
+                    return;
+                }
+            }
+            switch(input) {
+                case equipOtherGun:
+                    if (currentSlot !== 0) {
+                        weaponNext = 0;
+                    } else if (currentSlot == 0) {
+                        weaponNext = 1;
+                    }
+                    break;
+                case attack:
+                    mousePosDown = true;
+                    firstClick = true;
+                    break;
+                case equipNextWeapon:
+                    weaponNext = currentSlot;
+                    weaponNext += 1;
+                    weaponNext %= 4;
+                    break;
+                case equipPreviousWeapon:
+                    weaponNext = currentSlot;
+                    weaponNext += 3;
+                    weaponNext %= 4;
+                    break;
+                default:
+                    for (let i = 0; i < slots.length; i++) {
+                    if (input == slots[i].bind && currentSlot !== i) {
+                        weaponNext = i;
+                        return;
+                    }
+                }
+            }
+            if (isKey == true) {
+                pressedKeys.push(input);
+            }
+        }
+
+        function shoot() {
+            currentDelay = slots[currentSlot].attackDelay;
+            roll.push({
+                start: time / 2,
+                wide: shotWidth,
+                height: currentSlot,
+                outline: false,
+                colour: "#000000",
+                identifier: "shot",
+                priority: 1
+            });
+            roll.push({
+                start: time / 2 + shotWidth,
+                wide: slots[currentSlot].attackDelay,
+                height: currentSlot,
+                outline: true,
+                colour: "#000000",
+                identifier: currentSlot,
+                priority: 1
+            });
+            if (currentSlot == 2) {
+                meleeDelay = slots[2].attackDelay;
+            }
+        }
+
+        function ratio(divisor) {
+            return window.innerHeight * window.innerWidth / divisor;
+        }
+
+        function hands(x, y) {
+            ctx.beginPath();
+            ctx.arc(window.innerWidth / 2 + x, window.innerHeight / 4 + y, ratio(110899.2), 0, 2 * Math.PI);
+            ctx.stroke();
+        }
+
+        function gun(x, y, width, height) {
+            ctx.beginPath();
+            ctx.strokeRect(window.innerWidth / 2 + x, window.innerHeight / 4 + y, width, height)
+            ctx.stroke();
+        }
+
+        function line(y) {
+            ctx.beginPath();
+            ctx.moveTo(0, y);
+            ctx.lineTo(window.innerWidth, y);
+            ctx.stroke();
+        }
+
+        function keybinds() {
+            console.log(`Attack keybind is "${attack}"`);
+            console.log(`Primary keybind is "${primary.bind}"`);
+            console.log(`Secondary keybind is "${secondary.bind}"`);
+            console.log(`Melee keybind is "${melee.bind}"`);
+            console.log(`Throwables keybind is "${throwable.bind}"`);
+            console.log(`"Equip other gun" keybind is "${equipOtherGun}"`);
+            console.log(`"Equip next weapon" keybind is "${equipNextWeapon}"`);
+            console.log(`"Equip previous weapon" keybind is "${equipPreviousWeapon}"`);
+        }
+
+        function weapons() {
+            console.log(`Primary`);
+            console.log(`   Attack Delay is ${primary.attackDelay}`);
+            console.log(`   Switch Delay is ${primary.switchDelay}`);
+            console.log(`   Automatic is ${primary.automatic}`);
+            console.log(`   Deploy Group is ${primary.deployGroup}`);
+            console.log(`Secondary`);
+            console.log(`   Attack Delay is ${secondary.attackDelay}`);
+            console.log(`   Switch Delay is ${secondary.switchDelay}`);
+            console.log(`   Automatic is ${secondary.automatic}`);
+            console.log(`   Deploy Group is ${secondary.deployGroup}`);
+            console.log(`Melee`);
+            console.log(`   Attack Delay is ${melee.attackDelay}`);
+            console.log(`   Automatic is ${melee.automatic}`);
+            console.log(`Throwables`);
+            console.log(`   Automatic is ${throwable.automatic}`);
+            
+        }
+        
+        function mainLoop() {
+            // Clear canvas
+            ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+
+            // Find timce since last frame
+            oldTime = newTime;
+            newTime = new Date().getTime();
+            latestInterval = (newTime - oldTime);
+
+            // Update current delay
+            if (currentDelay > 0) {
+                currentDelay -= latestInterval;
+            }
+            if (currentDelay < 0) {
+                currentDelay = 0;
+            }
+            if (typeof currentDelay !== "number") {
+                currentDelay = 0;
+            }
+
+            // Updates melee delay
+            if (meleeDelay > 0) {
+                meleeDelay -= latestInterval;
+            }
+            if (meleeDelay < 0) {
+                meleeDelay = 0;
+            }
+            if (typeof meleeDelay !== "number") {
+                meleeDelay = 0;
+            }
+
+            // Updates free switch delay
+            if (freeSwitchDelay > 0) {
+                freeSwitchDelay -= latestInterval;
+            }
+            if (freeSwitchDelay < 0) {
+                freeSwitchDelay = 0;
+            }
+            if (typeof freeSwitchDelay !== "number") {
+                freeSwitchDelay = 0;
+            }
+
+            // Updates roll
+            for (let i = 0; i < roll.length; i++) {
+                roll[i].start -= latestInterval;
+                if (roll[i].start <= 0 - roll[i].wide) {
+                    roll.splice(i, 1);
+                    i -= 1;
+                }
+            }
+
+            // Updates weapon
+            if (weaponNext !== undefined) {
+                let lastSlot = currentSlot;
+                currentSlot = weaponNext;
+                weaponNext = undefined;
+                delayColour = "#000000"
+                if (currentSlot < 2) {
+                    for (let i = roll.length - 1; i >= 0; i--) {
+                        if (roll[i].identifier == currentSlot && roll[i].start + roll[i].wide > time / 2) {
+                            roll[i].wide = time / 2 - roll[i].start + border;
+                        }
+                    }
+                    let delay;
+                    if (freeSwitchDelay > 0) {
+                        delay = slots[currentSlot].switchDelay;
+                    } else if (freeSwitchDelay == 0) {
+                        freeSwitchDelay = 1000;
+                        if ((slots[lastSlot].deployGroup !== undefined && slots[currentSlot].deployGroup !== undefined) && slots[lastSlot].deployGroup == slots[currentSlot].deployGroup) {
+                            delay = slots[currentSlot].switchDelay;
+                        } else {
+                            delay = 250;
+                            delayColour = "#00ff4c";
+                        }
+                    }
+                    currentDelay = delay
+                    roll.push({
+                        start: time / 2,
+                        wide: delay,
+                        height: currentSlot,
+                        outline: true,
+                        colour: delayColour,
+                        identifier: currentSlot,
+                        priority: 1
+                    });
+                } else if (currentSlot === 2) {
+                    currentDelay = meleeDelay;
+                }
+            }
+ 
+            // Check if should shoot
+            if (mousePosDown == true && currentDelay == 0) {
+                if (slots[currentSlot].automatic == true || (slots[currentSlot].automatic == false && firstClick == true)) {
+                    shoot();
+                }
+            }
+            if (firstClick == true) {
+                firstClick = false;
+            }
+
+            // Does the mousedown roll
+            if (mousePosDown == true && roll.length > 0) {
+                let n = 0;
+                for (let i = roll.length - 1; i >= 0; i--){
+                    if (roll[i].identifier == "mouseDown"  && (roll[i].start + roll[i].wide + latestInterval) == time / 2) {
+                        if (roll[i].height == currentSlot) {
+                            roll[i].wide += latestInterval;
+                            n++;
+                            break;
+                        } else if (roll[i].done == false && roll[i].height !== currentSlot) {
+                            roll[i].wide += latestInterval;
+                            roll[i].done = true;
+                        }
+                    }
+                }
+                if (n == 0) {
+                    roll.push({
+                        start: time / 2,
+                        wide: 0,
+                        height: currentSlot,
+                        outline: false,
+                        colour: "#999999",
+                        identifier: "mouseDown",
+                        priority: 0,
+                        done: false
+                    });
+                }
+            }
+
+            // Fps counter stuff
+            fps.total += latestInterval,
+            fps.frames++
+            if(fps.total >= 1000) {
+                fps.fps = fps.frames;
+                fps.total = 0;
+                fps.frames = 0;
+            }
+
+            // Draws Player
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.arc(window.innerWidth / 2, window.innerHeight / 4, ratio(36966.4), 0, 2 * Math.PI);
+            ctx.stroke();
+            switch (slots[currentSlot]) {
+                case primary: 
+                    hands(ratio(36966.4), ratio(-110899.2));
+                    hands(ratio(15842.7428571), ratio(221798.4));
+                    gun(ratio(55449.6), ratio(-221798.4), ratio(13862.4), ratio(110899.2));
+                    break;
+                case secondary: 
+                    hands(ratio(27724.8), 0);
+                    gun(ratio(27724.8), ratio(-221798.4), ratio(27724.8), ratio(110899.2));
+                    break;
+                case melee:
+                    hands(ratio(36966.4), ratio(-55449.6));
+                    hands(ratio(36966.4), ratio(55449.6));
+                    break;
+                case throwable:
+                    hands(ratio(36966.4), ratio(-55449.6));
+                    hands(ratio(36966.4), ratio(55449.6));
+                    ctx.beginPath();
+                    ctx.arc(window.innerWidth / 2 + ratio(27724.8), window.innerHeight / 4 + ratio(73932.8), ratio(158427.428571), 0, 2 * Math.PI);
+                    ctx.stroke();
+            }
+
+            // Draws Roll
+            let priorities = [];
+            for (let i = 0; i < priorityNum; i++) {
+                priorities.push([]);
+            }
+            for (let i = 0; i < roll.length; i++) {
+                priorities[roll[i].priority].push(i);
+            }
+            for (let i = 0; i < priorityNum; i++) {
+                for (let n = 0; n < priorities[i].length; n++) {
+                    ctx.fillStyle = roll[priorities[i][n]].colour;
+                    if (roll[priorities[i][n]].outline == false) {
+                        ctx.fillRect(roll[priorities[i][n]].start * window.innerWidth / time, slots[roll[priorities[i][n]].height].y, roll[priorities[i][n]].wide * window.innerWidth / time, window.innerHeight / 16,);
+                    }
+                    if (roll[priorities[i][n]].outline == true) {
+                        ctx.fillRect((roll[priorities[i][n]].start * window.innerWidth / time) + (border / 2), slots[roll[priorities[i][n]].height].y + (border / 2), (roll[priorities[i][n]].wide * window.innerWidth / time) - border, (window.innerHeight / 16) - border);
+                    }
+                }
+            }
+
+            ctx.lineWidth = 1;
+            ctx.fillStyle = "#000000"
+            ctx.strokeStyle = "#000000"
+            line(window.innerHeight / 8 * 5);
+            line(window.innerHeight / 16 * 11);
+            line(window.innerHeight / 8 * 6);
+            line(window.innerHeight / 16 * 13);
+            line(window.innerHeight / 8 * 7);
+            ctx.beginPath();
+            ctx.moveTo(window.innerWidth / 2, window.innerHeight / 8 * 5);
+            ctx.lineTo(window.innerWidth / 2, window.innerHeight / 8 * 7);
+            ctx.stroke();
+            ctx.lineWidth = 1.5;
+            ctx.strokeRect(window.innerWidth / 2 - window.innerHeight / 32, slots[currentSlot].y, window.innerHeight / 16, window.innerHeight / 16);
+
+            // Draws text for delays and framerate
+            ctx.font = `${window.innerWidth * window.innerHeight / 36966.4}px arial`;
+            ctx.fillText(`Current weapon delay is ${currentDelay}`, window.innerWidth / 8, window.innerHeight / 4);
+            ctx.fillText(`Current free switch delay is ${freeSwitchDelay}`, window.innerWidth / 8 * 5, window.innerHeight / 4);
+            ctx.font = `${window.innerWidth * window.innerHeight / 44359.68}px arial`;
+            ctx.fillText(`${fps.fps} fps`, window.innerWidth / 60, window.innerHeight / 16)
+        }
+
+        var loop = setInterval(mainLoop, 1);
+    </script>
+</body>
+</html>
