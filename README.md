@@ -58,7 +58,7 @@ Weapons are objects. I have already touched on this a bit in keybinding. The obj
 * `automatic`. A boolean value. This tells if the weapon is automatic or not.
 * `deployGroup`. Any type will work (though in surviv.io they are all numbers). This gun's `deploy group`. To make a gun not have a `deploy group`, use `undefined` (ex. `primary.deployGroup = undefined`).
 
-`Melee` only has the properties `attackDelay` and `automatic`, and `throwable` only has the property `automatic`. There are other properties, but you will probably screw something up if you play around with them ~~(I'm not saying you shouldn't)~~.
+`melee` and `throwable` only has the properties `attackDelay` and `automatic`.There are other properties, but you will probably screw something up if you play around with them ~~(I'm not saying you shouldn't)~~.
 
 To view all of these current weapon stats, type `weapons()`.
 
