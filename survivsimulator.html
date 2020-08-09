@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Surviv Simulator Thingy</title>
+    <title>Surviv Timing Simulator</title>
     <style type="text/css">
         body {
             margin: 0;
@@ -44,9 +44,11 @@
             automatic: false
         };
         var throwable = {
+            attackDelay: 400,
             y: window.innerHeight / 16 * 13,
             bind: "4",
-            automatic: false
+            automatic: false,
+            cook: 0.5
         }
         currentDelay = 0;
         meleeDelay = 0;
@@ -62,7 +64,7 @@
             primary,
             secondary,
             melee,
-            throwable      
+            throwable
         ];
         var roll = [];
 
@@ -74,7 +76,7 @@
         var mousePosDown = false;
         var firstClick = true;
         var weaponNext;
-        var shotWidth = 15;
+        var shotWidth = 20;
         var border = 10;
         var fps = {
             total: 0,
@@ -83,6 +85,7 @@
         }
         var priorityNum = 2;
         var freeSwitchDelay = 0;
+        var throwablesUp = true;
 
         // Stops things popping up on right click
         window.addEventListener("contextmenu", function(contextBad) {
@@ -195,20 +198,29 @@
             }
         }
 
-        function shoot() {
-            currentDelay = slots[currentSlot].attackDelay;
+        function shoot(delay, shoot, timeDelay) {
+            let delayStart;
+            if (timeDelay === undefined) {
+                delayStart = time / 2;
+                currentDelay += delay;
+            } else {
+                delayStart = timeDelay;
+                currentDelay = delay;
+            }
+            if (shoot !== false) {
+                roll.push({
+                    start: delayStart,
+                    wide: shotWidth,
+                    height: currentSlot,
+                    outline: false,
+                    colour: "#000000",
+                    identifier: "shot",
+                    priority: 1
+                });
+            }
             roll.push({
-                start: time / 2,
-                wide: shotWidth,
-                height: currentSlot,
-                outline: false,
-                colour: "#000000",
-                identifier: "shot",
-                priority: 1
-            });
-            roll.push({
-                start: time / 2 + shotWidth,
-                wide: slots[currentSlot].attackDelay,
+                start: delayStart + shotWidth,
+                wide: delay,
                 height: currentSlot,
                 outline: true,
                 colour: "#000000",
@@ -330,12 +342,14 @@
                 currentSlot = weaponNext;
                 weaponNext = undefined;
                 delayColour = "#000000"
-                if (currentSlot < 2) {
+                if (currentSlot < 2 || currentSlot === 3) {
                     for (let i = roll.length - 1; i >= 0; i--) {
                         if (roll[i].identifier == currentSlot && roll[i].start + roll[i].wide > time / 2) {
                             roll[i].wide = time / 2 - roll[i].start + border;
                         }
                     }
+                }
+                if (currentSlot < 2) {
                     let delay;
                     if (freeSwitchDelay > 0) {
                         delay = slots[currentSlot].switchDelay;
@@ -360,13 +374,32 @@
                     });
                 } else if (currentSlot === 2) {
                     currentDelay = meleeDelay;
+                } else if (currentSlot === 3) {
+                    currentDelay = 0;
                 }
             }
  
             // Check if should shoot
-            if (mousePosDown == true && currentDelay == 0) {
-                if (slots[currentSlot].automatic == true || (slots[currentSlot].automatic == false && firstClick == true)) {
-                    shoot();
+            if (mousePosDown == true) {
+                if (currentDelay == 0) {
+                    if (currentSlot === 3) {
+                        if (throwablesUp = true) {
+                            throwablesUp = false;
+                        }
+                    }
+                    if (slots[currentSlot].automatic == true || (slots[currentSlot].automatic == false && firstClick == true)) {
+                        if (currentSlot === 3) {
+                            shoot(throwable.cook * throwable.attackDelay, false)
+                        } else {
+                            shoot(slots[currentSlot].attackDelay);
+                        }  
+                    }
+                }
+            } else if (mousePosDown == false) {
+                if (throwablesUp === false) {
+                    throwablesUp = true;
+                    console.log(currentDelay)
+                    shoot(((1 - throwable.cook) * throwable.attackDelay), true, time / 2 + currentDelay)
                 }
             }
             if (firstClick == true) {
@@ -374,7 +407,7 @@
             }
 
             // Does the mousedown roll
-            if (mousePosDown == true && roll.length > 0) {
+            if (mousePosDown == true) {
                 let n = 0;
                 for (let i = roll.length - 1; i >= 0; i--){
                     if (roll[i].identifier == "mouseDown"  && (roll[i].start + roll[i].wide + latestInterval) == time / 2) {
