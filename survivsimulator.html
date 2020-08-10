@@ -281,7 +281,8 @@
             console.log(`   Attack Delay is ${melee.attackDelay}`);
             console.log(`   Automatic is ${melee.automatic}`);
             console.log(`Throwables`);
-            console.log(`   Automatic is ${throwable.automatic}`);
+            console.log(`   Attack Delay is ${throwable.attackDelay}`);
+            console.log(`   Cook part is ${throwable.cook}`);
             
         }
         
@@ -408,11 +409,12 @@
                     if (currentSlot === 3) {
                         if (throwablesUp === true && firstClick === true) {
                             throwablesUp = false;
+                            shoot(throwable.cook * throwable.attackDelay, false)
                         }
                     }
                     if (slots[currentSlot].automatic == true || (slots[currentSlot].automatic == false && firstClick == true)) {
                         if (currentSlot === 3) {
-                            shoot(throwable.cook * throwable.attackDelay, false)
+                            
                         } else {
                             shoot(slots[currentSlot].attackDelay);
                         }  
