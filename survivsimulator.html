@@ -377,13 +377,36 @@
                 } else if (currentSlot === 3) {
                     currentDelay = 0;
                 }
+                if (lastSlot === 3) {
+                    for (let i = roll.length - 1; i > 0; i--) {
+                        if (roll[i].identifier === 3) {
+                            if (roll[i].start >= time / 2) {
+                                roll.splice(i, 1);
+                            } else if (roll[i].start + roll[i].wide >= time / 2) {
+                                roll[i].wide = time / 2 - roll[i].start;
+                            }
+                        }
+                        if (throwablesUp === false) {
+                            roll.push({
+                                start: time / 2,
+                                wide: shotWidth,
+                                height: 3,
+                                outline: false,
+                                colour: "#000000",
+                                identifier: "shot",
+                                priority: 1
+                            });
+                            throwablesUp = true;
+                        }
+                    }
+                }
             }
  
             // Check if should shoot
             if (mousePosDown == true) {
                 if (currentDelay == 0) {
                     if (currentSlot === 3) {
-                        if (throwablesUp = true) {
+                        if (throwablesUp === true && firstClick === true) {
                             throwablesUp = false;
                         }
                     }
