@@ -58,7 +58,8 @@ Weapons are objects. I have already touched on this a bit in keybinding. The obj
 * `automatic`. A boolean value. This tells if the weapon is automatic or not.
 * `deployGroup`. Any type will work (though in surviv.io they are all numbers). This gun's `deploy group`. To make a gun not have a `deploy group`, use `undefined` (ex. `primary.deployGroup = undefined`).
 
-`melee` and `throwable` only has the properties `attackDelay` and `automatic`.There are other properties, but you will probably screw something up if you play around with them ~~(I'm not saying you shouldn't)~~.
+`melee` and `attackDelay` and `automatic`. `throwable` has `attackDelay` and `cook`. When you use throwables, there will be a delay (from the cooking animation), it will throw, and then there will be a second delay (from the bringing your hand back to get a new throwable animation). `cook`, a decimal value, is how much of the `attackDelay` (`attackDelay` is the total of both delays) is the first delay, and the second. Having it at 0.25 means that the first delay will be 25% of `attackDelay`'s value, and that the second delay will be 75% of `attackDelay`'s value.  
+There are other properties, but you will probably screw something up if you play around with them ~~(I'm not saying you shouldn't)~~.
 
 To view all of these current weapon stats, type `weapons()`.
 
