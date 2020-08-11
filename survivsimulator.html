@@ -81,7 +81,7 @@
             total: 0,
             frames: 0,
             fps: 0
-        }
+        };
         var priorityNum = 2;
         var freeSwitchDelay = 0;
         var throwablesUp = true;
@@ -92,7 +92,7 @@
         });
 
         window.addEventListener("mousedown", function(click) {
-            if (click.button == 1) {
+            if (click.button === 1) {
                 click.preventDefault();
             }
             let mouseInput = processMouse(click);
@@ -115,7 +115,7 @@
         }, false);
 
         function processInputUp(input) {
-            if (input == attack) {
+            if (input === attack) {
                 mousePosDown = false;
             } 
         }
@@ -124,7 +124,7 @@
             let objectThing;
             if (scroll.deltaY < 0) {
                 processInput("scrollUp")
-            } else if (scroll.deltaY > 0) {
+            } else {
                 processInput("scrollDown")
             }
         }, false);
@@ -158,7 +158,7 @@
 
         function processInput(input, isKey) {
             for (let i = 0; i < pressedKeys.length; i++) {
-                if (pressedKeys[i] == input) {
+                if (pressedKeys[i] === input) {
                     return;
                 }
             }
@@ -166,7 +166,7 @@
                 case equipOtherGun:
                     if (currentSlot !== 0) {
                         weaponNext = 0;
-                    } else if (currentSlot == 0) {
+                    } else {
                         weaponNext = 1;
                     }
                     break;
@@ -186,13 +186,13 @@
                     break;
                 default:
                     for (let i = 0; i < slots.length; i++) {
-                    if (input == slots[i].bind && currentSlot !== i) {
+                    if (input === slots[i].bind && currentSlot !== i) {
                         weaponNext = i;
                         return;
                     }
                 }
             }
-            if (isKey == true) {
+            if (isKey) {
                 pressedKeys.push(input);
             }
         }
@@ -226,7 +226,7 @@
                 identifier: currentSlot,
                 priority: 1
             });
-            if (currentSlot == 2) {
+            if (currentSlot === 2) {
                 meleeDelay = slots[2].attackDelay;
             }
         }
@@ -282,9 +282,8 @@
             console.log(`Throwables`);
             console.log(`   Attack Delay is ${throwable.attackDelay}`);
             console.log(`   Cook part is ${throwable.cook}`);
-            
         }
-        
+
         function mainLoop() {
             // Clear canvas
             ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
@@ -336,7 +335,7 @@
                 }
             }
 
-            // Updates weapon
+            // Updates weapon and adds switch delays
             if (weaponNext !== undefined) {
                 let lastSlot = currentSlot;
                 currentSlot = weaponNext;
@@ -344,7 +343,7 @@
                 delayColour = "#000000"
                 if (currentSlot < 2 || currentSlot === 3) {
                     for (let i = roll.length - 1; i >= 0; i--) {
-                        if (roll[i].identifier == currentSlot && roll[i].start + roll[i].wide > time / 2) {
+                        if (roll[i].identifier === currentSlot && roll[i].start + roll[i].wide > time / 2) {
                             roll[i].wide = time / 2 - roll[i].start + border;
                         }
                     }
@@ -353,9 +352,9 @@
                     let delay;
                     if (freeSwitchDelay > 0) {
                         delay = slots[currentSlot].switchDelay;
-                    } else if (freeSwitchDelay == 0) {
+                    } else {
                         freeSwitchDelay = 1000;
-                        if ((slots[lastSlot].deployGroup !== undefined && slots[currentSlot].deployGroup !== undefined) && slots[lastSlot].deployGroup == slots[currentSlot].deployGroup) {
+                        if ((slots[lastSlot].deployGroup !== undefined && slots[currentSlot].deployGroup !== undefined) && slots[lastSlot].deployGroup === slots[currentSlot].deployGroup) {
                             delay = slots[currentSlot].switchDelay;
                         } else {
                             delay = 250;
@@ -374,8 +373,14 @@
                     });
                 } else if (currentSlot === 2) {
                     currentDelay = meleeDelay;
+                    if (freeSwitchDelay === 0) {
+                        freeSwitchDelay = 1000;
+                    }
                 } else if (currentSlot === 3) {
                     currentDelay = 0;
+                    if (freeSwitchDelay === 0) {
+                        freeSwitchDelay = 1000;
+                    }
                 }
                 if (lastSlot === 3) {
                     for (let i = roll.length - 1; i > 0; i--) {
@@ -386,7 +391,7 @@
                                 roll[i].wide = time / 2 - roll[i].start;
                             }
                         }
-                        if (throwablesUp === false) {
+                        if (!throwablesUp) {
                             roll.push({
                                 start: time / 2,
                                 wide: shotWidth,
@@ -401,51 +406,49 @@
                     }
                 }
             }
- 
+
             // Check if should shoot
-            if (mousePosDown == true) {
-                if (currentDelay == 0) {
+            if (mousePosDown) {
+                if (currentDelay === 0) {
                     if (currentSlot === 3) {
-                        if (throwablesUp === true && firstClick === true) {
+                        if (throwablesUp && firstClick) {
                             throwablesUp = false;
                             shoot(throwable.cook * throwable.attackDelay, false)
                         }
                     }
-                    if (slots[currentSlot].automatic == true || (slots[currentSlot].automatic == false && firstClick == true)) {
-                        if (currentSlot === 3) {
-                            
-                        } else {
+                    if (slots[currentSlot].automatic || firstClick) {
+                        if (currentSlot !== 3) {
                             shoot(slots[currentSlot].attackDelay);
-                        }  
+                        } 
                     }
                 }
-            } else if (mousePosDown == false) {
-                if (throwablesUp === false) {
+            } else {
+                if (!throwablesUp) {
                     throwablesUp = true;
                     console.log(currentDelay)
                     shoot(((1 - throwable.cook) * throwable.attackDelay), true, time / 2 + currentDelay)
                 }
             }
-            if (firstClick == true) {
+            if (firstClick) {
                 firstClick = false;
             }
 
             // Does the mousedown roll
-            if (mousePosDown == true) {
+            if (mousePosDown) {
                 let n = 0;
                 for (let i = roll.length - 1; i >= 0; i--){
-                    if (roll[i].identifier == "mouseDown"  && (roll[i].start + roll[i].wide + latestInterval) == time / 2) {
-                        if (roll[i].height == currentSlot) {
+                    if (roll[i].identifier === "mouseDown"  && (roll[i].start + roll[i].wide + latestInterval) === time / 2) {
+                        if (roll[i].height === currentSlot) {
                             roll[i].wide += latestInterval;
                             n++;
                             break;
-                        } else if (roll[i].done == false && roll[i].height !== currentSlot) {
+                        } else if (!roll[i].done) {
                             roll[i].wide += latestInterval;
                             roll[i].done = true;
                         }
                     }
                 }
-                if (n == 0) {
+                if (n === 0) {
                     roll.push({
                         start: time / 2,
                         wide: 0,
@@ -506,10 +509,10 @@
             for (let i = 0; i < priorityNum; i++) {
                 for (let n = 0; n < priorities[i].length; n++) {
                     ctx.fillStyle = roll[priorities[i][n]].colour;
-                    if (roll[priorities[i][n]].outline == false) {
+                    if (!roll[priorities[i][n]].outline) {
                         ctx.fillRect(roll[priorities[i][n]].start * window.innerWidth / time, slots[roll[priorities[i][n]].height].y, roll[priorities[i][n]].wide * window.innerWidth / time, window.innerHeight / 16,);
                     }
-                    if (roll[priorities[i][n]].outline == true) {
+                    if (roll[priorities[i][n]].outline) {
                         ctx.fillRect((roll[priorities[i][n]].start * window.innerWidth / time) + (border / 2), slots[roll[priorities[i][n]].height].y + (border / 2), (roll[priorities[i][n]].wide * window.innerWidth / time) - border, (window.innerHeight / 16) - border);
                     }
                 }
@@ -535,10 +538,13 @@
             ctx.fillText(`Current weapon delay is ${currentDelay}`, window.innerWidth / 8, window.innerHeight / 4);
             ctx.fillText(`Current free switch delay is ${freeSwitchDelay}`, window.innerWidth / 8 * 5, window.innerHeight / 4);
             ctx.font = `${window.innerWidth * window.innerHeight / 44359.68}px arial`;
-            ctx.fillText(`${fps.fps} fps`, window.innerWidth / 60, window.innerHeight / 16)
+            ctx.fillText(`${fps.fps} fps`, window.innerWidth / 60, window.innerHeight / 16);
+
+            requestAnimationFrame(mainLoop)
         }
 
-        var loop = setInterval(mainLoop, 1);
+        // var loop = setInterval(mainLoop, 1);
+        requestAnimationFrame(mainLoop)
     </script>
 </body>
 </html>
