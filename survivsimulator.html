@@ -40,7 +40,7 @@
         var melee = {
             attackDelay: 250,
             y: window.innerHeight / 8 * 6,
-            bind: "e",
+            bind: "3",
             automatic: false
         };
         var throwable = {
@@ -48,16 +48,17 @@
             y: window.innerHeight / 16 * 13,
             bind: "4",
             cook: 0.5
-        }
+        };
         currentDelay = 0;
         meleeDelay = 0;
 
         var pressedKeys = [];
 
         var equipOtherGun = " ";
-        var equipPreviousWeapon = "scrollUp"
+        var equipPreviousWeapon = "scrollUp";
         var equipNextWeapon = "scrollDown";
         var attack = "leftMouse";
+        var stowWeapons = "e";
 
         var slots = [
             primary,
@@ -69,7 +70,7 @@
 
         var time = 7000;   
         var currentSlot = 2;
-        var newTime  = new Date().getTime();
+        var newTime = new Date().getTime();
         var oldTime;
         var latestInterval;
         var mousePosDown = false;
@@ -94,7 +95,7 @@
         window.addEventListener("mousedown", function(click) {
             if (click.button === 1) {
                 click.preventDefault();
-            }
+            };
             let mouseInput = processMouse(click);
             processInput(mouseInput);
         }, false);
@@ -111,7 +112,7 @@
                     break;
                 }
             }
-            processInputUp(key.key)
+            processInputUp(key.key);
         }, false);
 
         function processInputUp(input) {
@@ -123,9 +124,9 @@
         window.addEventListener("wheel", function(scroll) {
             let objectThing;
             if (scroll.deltaY < 0) {
-                processInput("scrollUp")
+                processInput("scrollUp");
             } else {
-                processInput("scrollDown")
+                processInput("scrollDown");
             }
         }, false);
 
@@ -183,6 +184,9 @@
                     weaponNext = currentSlot;
                     weaponNext += 3;
                     weaponNext %= 4;
+                    break;
+                case stowWeapons:
+                    weaponNext = 2;
                     break;
                 default:
                     for (let i = 0; i < slots.length; i++) {
@@ -243,7 +247,7 @@
 
         function gun(x, y, width, height) {
             ctx.beginPath();
-            ctx.strokeRect(window.innerWidth / 2 + x, window.innerHeight / 4 + y, width, height)
+            ctx.strokeRect(window.innerWidth / 2 + x, window.innerHeight / 4 + y, width, height);
             ctx.stroke();
         }
 
@@ -340,7 +344,7 @@
                 let lastSlot = currentSlot;
                 currentSlot = weaponNext;
                 weaponNext = undefined;
-                delayColour = "#000000"
+                delayColour = "#000000";
                 if (currentSlot < 2 || currentSlot === 3) {
                     for (let i = roll.length - 1; i >= 0; i--) {
                         if (roll[i].identifier === currentSlot && roll[i].start + roll[i].wide > time / 2) {
@@ -361,7 +365,7 @@
                             delayColour = "#00ff4c";
                         }
                     }
-                    currentDelay = delay
+                    currentDelay = delay;
                     roll.push({
                         start: time / 2,
                         wide: delay,
@@ -413,7 +417,7 @@
                     if (currentSlot === 3) {
                         if (throwablesUp && firstClick) {
                             throwablesUp = false;
-                            shoot(throwable.cook * throwable.attackDelay, false)
+                            shoot(throwable.cook * throwable.attackDelay, false);
                         }
                     }
                     if (slots[currentSlot].automatic || firstClick) {
@@ -425,8 +429,7 @@
             } else {
                 if (!throwablesUp) {
                     throwablesUp = true;
-                    console.log(currentDelay)
-                    shoot(((1 - throwable.cook) * throwable.attackDelay), true, time / 2 + currentDelay)
+                    shoot(((1 - throwable.cook) * throwable.attackDelay), true, time / 2 + currentDelay);
                 }
             }
             if (firstClick) {
@@ -436,7 +439,7 @@
             // Does the mousedown roll
             if (mousePosDown) {
                 let n = 0;
-                for (let i = roll.length - 1; i >= 0; i--){
+                for (let i = roll.length - 1; i >= 0; i--) {
                     if (roll[i].identifier === "mouseDown"  && (roll[i].start + roll[i].wide + latestInterval) === time / 2) {
                         if (roll[i].height === currentSlot) {
                             roll[i].wide += latestInterval;
@@ -463,8 +466,8 @@
             }
 
             // Fps counter stuff
-            fps.total += latestInterval,
-            fps.frames++
+            fps.total += latestInterval;
+            fps.frames++;
             if(fps.total >= 1000) {
                 fps.fps = fps.frames;
                 fps.total = 0;
@@ -519,8 +522,8 @@
             }
 
             ctx.lineWidth = 1;
-            ctx.fillStyle = "#000000"
-            ctx.strokeStyle = "#000000"
+            ctx.fillStyle = "#000000";
+            ctx.strokeStyle = "#000000";
             line(window.innerHeight / 8 * 5);
             line(window.innerHeight / 16 * 11);
             line(window.innerHeight / 8 * 6);
@@ -534,17 +537,16 @@
             ctx.strokeRect(window.innerWidth / 2 - window.innerHeight / 32, slots[currentSlot].y, window.innerHeight / 16, window.innerHeight / 16);
 
             // Draws text for delays and framerate
-            ctx.font = `${window.innerWidth * window.innerHeight / 36966.4}px arial`;
+            ctx.font = `${ratio(36966.4)}px arial`;
             ctx.fillText(`Current weapon delay is ${currentDelay}`, window.innerWidth / 8, window.innerHeight / 4);
             ctx.fillText(`Current free switch delay is ${freeSwitchDelay}`, window.innerWidth / 8 * 5, window.innerHeight / 4);
-            ctx.font = `${window.innerWidth * window.innerHeight / 44359.68}px arial`;
+            ctx.font = `${ratio(44359.68)}px arial`;
             ctx.fillText(`${fps.fps} fps`, window.innerWidth / 60, window.innerHeight / 16);
 
-            requestAnimationFrame(mainLoop)
+            requestAnimationFrame(mainLoop);
         }
 
-        // var loop = setInterval(mainLoop, 1);
-        requestAnimationFrame(mainLoop)
+        requestAnimationFrame(mainLoop);
     </script>
 </body>
 </html>
