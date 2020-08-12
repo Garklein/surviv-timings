@@ -21,71 +21,92 @@
         canvas.height = window.innerHeight;
         canvas.width = window.innerWidth;
 
-        var primary = {
+        // slots
+        var primary, secondary, melee, throwable, slots, currentSlot, mousePosDown, firstClick, weaponNext, throwablesUp, weaponsList;
+
+        // delays
+        var currentDelay, meleeDelay, freeSwitchDelay;
+
+        // keybinds
+        var equipOtherGun, equipPreviousWeapon, equipNextWeapon, attack, stowWeapons, equipLastWeapon, switchGunSlots;
+
+        // timing and roll stuff
+        var roll, time, newTime, oldTime, latestInterval, shotWidth, border;
+
+        // misc
+        var pressedKeys, fps, priorityNum, placeholder;
+
+        primary = {
             attackDelay: 900,
             switchDelay: 900,
             y: window.innerHeight / 8 * 5,
             bind: "1",
             automatic: false,
-            deployGroup: 1
+            deployGroup: 1,
+            gun: [55449.6, -221798.4, 13862.4, 110899.2],
+            hands: [[36966.4, -110899.2], [15842.7428571, 221798.4]]
         };
-        var secondary = {
+        secondary = {
             attackDelay: 100,
             switchDelay: 750,
             y: window.innerHeight / 16 * 11,
             bind: "2",
             automatic: true,
-            deployGroup: undefined
+            deployGroup: undefined,
+            gun: [27724.8, -221798.4, 27724.8, 110899.2],
+            hands: [[27724.8, 0]]
         };
-        var melee = {
+        melee = {
             attackDelay: 250,
             y: window.innerHeight / 8 * 6,
             bind: "3",
             automatic: false
         };
-        var throwable = {
+        throwable = {
             attackDelay: 400,
             y: window.innerHeight / 16 * 13,
             bind: "4",
             cook: 0.5
         };
-        currentDelay = 0;
-        meleeDelay = 0;
-
-        var pressedKeys = [];
-
-        var equipOtherGun = " ";
-        var equipPreviousWeapon = "scrollUp";
-        var equipNextWeapon = "scrollDown";
-        var attack = "leftMouse";
-        var stowWeapons = "e";
-
-        var slots = [
+        slots = [
             primary,
             secondary,
             melee,
             throwable
         ];
-        var roll = [];
+        currentSlot = 2;
+        mousePosDown = false;
+        firstClick = true;
+        throwablesUp = true;
+        weaponsList = [undefined, 2];
 
-        var time = 7000;   
-        var currentSlot = 2;
-        var newTime = new Date().getTime();
-        var oldTime;
-        var latestInterval;
-        var mousePosDown = false;
-        var firstClick = true;
-        var weaponNext;
-        var shotWidth = 20;
-        var border = 10;
-        var fps = {
+        currentDelay = 0;
+        meleeDelay = 0;
+        freeSwitchDelay = 0; 
+
+        equipOtherGun = " ";
+        equipPreviousWeapon = "scrollUp";
+        equipNextWeapon = "scrollDown";
+        attack = "leftMouse";
+        stowWeapons = "e";
+        equipLastWeapon = "q";
+        switchGunSlots = "t";
+
+        roll = [];
+        time = 7000;   
+        newTime = new Date().getTime();
+        shotWidth = 20;
+        border = 10;
+
+        pressedKeys = [];
+        fps = {
             total: 0,
             frames: 0,
             fps: 0
         };
-        var priorityNum = 2;
-        var freeSwitchDelay = 0;
-        var throwablesUp = true;
+        priorityNum = 2;
+        placeholder = [];
+        
 
         // Stops things popping up on right click
         window.addEventListener("contextmenu", function(contextBad) {
@@ -122,7 +143,6 @@
         }
 
         window.addEventListener("wheel", function(scroll) {
-            let objectThing;
             if (scroll.deltaY < 0) {
                 processInput("scrollUp");
             } else {
@@ -143,7 +163,6 @@
         }, false);
 
         function processMouse(click) {
-            let objectThing;
             switch (click.button) {
                 case 0:
                     mouseButton = "leftMouse";
@@ -176,17 +195,46 @@
                     firstClick = true;
                     break;
                 case equipNextWeapon:
-                    weaponNext = currentSlot;
-                    weaponNext += 1;
-                    weaponNext %= 4;
+                    weaponNext = (currentSlot + 1) % 4;
                     break;
                 case equipPreviousWeapon:
-                    weaponNext = currentSlot;
-                    weaponNext += 3;
-                    weaponNext %= 4;
+                    weaponNext = (currentSlot + 3) % 4;
                     break;
                 case stowWeapons:
                     weaponNext = 2;
+                    break;
+                case equipLastWeapon:
+                    weaponNext = weaponsList[0];
+                    break;
+                case switchGunSlots:
+                    placeholder[0] = {
+                        attackDelay: secondary.attackDelay,
+                        switchDelay: secondary.attackDelay,
+                        y: primary.y,
+                        bind: primary.bind,
+                        automatic: secondary.automatic,
+                        deployGroup: secondary.deployGroup,
+                        gun: secondary.gun,
+                        hands: secondary.hands
+                    };
+                    placeholder[1] = {
+                        attackDelay: primary.attackDelay,
+                        switchDelay: primary.attackDelay,
+                        y: secondary.y,
+                        bind: secondary.bind,
+                        automatic: primary.automatic,
+                        deployGroup: primary.deployGroup,
+                        gun: primary.gun,
+                        hands: primary.hands
+                    };
+                    primary = placeholder[0];
+                    secondary = placeholder[1];
+                    slots[0] = primary;
+                    slots[1] = secondary;
+                    if (currentSlot < 2) {
+                        currentSlot += 1;
+                        currentSlot %= 2;
+                    }
                     break;
                 default:
                     for (let i = 0; i < slots.length; i++) {
@@ -236,7 +284,11 @@
         }
 
         function ratio(divisor) {
-            return window.innerHeight * window.innerWidth / divisor;
+            if (divisor === 0) {
+                return 0;
+            } else {
+                return window.innerHeight * window.innerWidth / divisor;
+            }
         }
 
         function hands(x, y) {
@@ -267,7 +319,9 @@
             console.log(`"Equip other gun" keybind is "${equipOtherGun}"`);
             console.log(`"Equip next weapon" keybind is "${equipNextWeapon}"`);
             console.log(`"Equip previous weapon" keybind is "${equipPreviousWeapon}"`);
-            console.log(`"Stow weapons" keybind is ${stowWeapons}`)
+            console.log(`"Stow weapons" keybind is ${stowWeapons}`);
+            console.log(`"Equip last weapon" keybind is ${equipLastWeapon}`);
+            console.log(`"Switch gun slots" keybind is ${switchGunSlots}`);
         }
 
         function weapons() {
@@ -344,6 +398,8 @@
             if (weaponNext !== undefined) {
                 let lastSlot = currentSlot;
                 currentSlot = weaponNext;
+                weaponsList.shift();
+                weaponsList.push(currentSlot);
                 weaponNext = undefined;
                 delayColour = "#000000";
                 if (currentSlot < 2 || currentSlot === 3) {
@@ -481,15 +537,6 @@
             ctx.arc(window.innerWidth / 2, window.innerHeight / 4, ratio(36966.4), 0, 2 * Math.PI);
             ctx.stroke();
             switch (slots[currentSlot]) {
-                case primary: 
-                    hands(ratio(36966.4), ratio(-110899.2));
-                    hands(ratio(15842.7428571), ratio(221798.4));
-                    gun(ratio(55449.6), ratio(-221798.4), ratio(13862.4), ratio(110899.2));
-                    break;
-                case secondary: 
-                    hands(ratio(27724.8), 0);
-                    gun(ratio(27724.8), ratio(-221798.4), ratio(27724.8), ratio(110899.2));
-                    break;
                 case melee:
                     hands(ratio(36966.4), ratio(-55449.6));
                     hands(ratio(36966.4), ratio(55449.6));
@@ -500,6 +547,12 @@
                     ctx.beginPath();
                     ctx.arc(window.innerWidth / 2 + ratio(27724.8), window.innerHeight / 4 + ratio(73932.8), ratio(158427.428571), 0, 2 * Math.PI);
                     ctx.stroke();
+                    break;
+                default:
+                    gun(ratio(slots[currentSlot].gun[0]), ratio(slots[currentSlot].gun[1]), ratio(slots[currentSlot].gun[2]), ratio(slots[currentSlot].gun[3]));
+                    for (let i = 0; i < slots[currentSlot].hands.length; i++) {
+                        hands(ratio(slots[currentSlot].hands[i][0]), ratio(slots[currentSlot].hands[i][1]));
+                    }
             }
 
             // Draws Roll
