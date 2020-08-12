@@ -32,6 +32,8 @@ You can keybind in this project. To do so, open the console (ctrl-shift-i, and n
 * `equipPreviousWeapon`
 * `equipNextWeapon`
 * `stowWeapons` (does the same as `throwable.bind`)
+* `equipLastWeapon`
+* `switchGunSlots`
 
 **NB: when putting in the `name of key/mouse button`, make sure to surround it with either single or double quotes**  
 If you want to put in a key, go to http://keycode.info/, press the button, and look at the `event.key`. For mouse buttons, these have been set by me. They are:
