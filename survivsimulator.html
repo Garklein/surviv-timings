@@ -31,10 +31,10 @@
         var equipOtherGun, equipPreviousWeapon, equipNextWeapon, attack, stowWeapons, equipLastWeapon, switchGunSlots;
 
         // timing and roll stuff
-        var roll, time, newTime, oldTime, latestInterval, shotWidth, border;
+        var roll, time, newTime, oldTime, latestInterval, shotWidth, border, priorities;
 
         // misc
-        var pressedKeys, fps, priorityNum, placeholder;
+        var pressedKeys, fps, priorityNum;
 
         primary = {
             attackDelay: 900,
@@ -104,8 +104,7 @@
             frames: 0,
             fps: 0
         };
-        priorityNum = 2;
-        placeholder = [];
+        priorityNum = 4;
         
 
         // Stops things popping up on right click
@@ -117,14 +116,12 @@
             if (click.button === 1) {
                 click.preventDefault();
             };
-            let mouseInput = processMouse(click);
-            processInput(mouseInput);
+            processInput(processMouse(click));
         }, false);
 
         // Automatic weapon stuff
         window.addEventListener("mouseup", function(click) {
-            let mouseInput = processMouse(click);
-            processInputUp(mouseInput); 
+            processInputUp(processMouse(click)); 
         }, false);
         window.addEventListener("keyup", function(key) {
             for (let i = 0; i < pressedKeys.length; i++) {
@@ -207,26 +204,28 @@
                     weaponNext = weaponsList[0];
                     break;
                 case switchGunSlots:
-                    placeholder[0] = {
-                        attackDelay: secondary.attackDelay,
-                        switchDelay: secondary.switchDelay,
-                        y: primary.y,
-                        bind: primary.bind,
-                        automatic: secondary.automatic,
-                        deployGroup: secondary.deployGroup,
-                        gun: secondary.gun,
-                        hands: secondary.hands
-                    };
-                    placeholder[1] = {
-                        attackDelay: primary.attackDelay,
-                        switchDelay: primary.switchDelay,
-                        y: secondary.y,
-                        bind: secondary.bind,
-                        automatic: primary.automatic,
-                        deployGroup: primary.deployGroup,
-                        gun: primary.gun,
-                        hands: primary.hands
-                    };
+                    const placeholder = [ 
+                        {
+                            attackDelay: secondary.attackDelay,
+                            switchDelay: secondary.switchDelay,
+                            y: primary.y,
+                            bind: primary.bind,
+                            automatic: secondary.automatic,
+                            deployGroup: secondary.deployGroup,
+                            gun: secondary.gun,
+                            hands: secondary.hands
+                        },
+                        {
+                            attackDelay: primary.attackDelay,
+                            switchDelay: primary.switchDelay,
+                            y: secondary.y,
+                            bind: secondary.bind,
+                            automatic: primary.automatic,
+                            deployGroup: primary.deployGroup,
+                            gun: primary.gun,
+                            hands: primary.hands
+                        }
+                    ];
                     primary = placeholder[0];
                     secondary = placeholder[1];
                     slots[0] = primary;
@@ -234,6 +233,46 @@
                     if (currentSlot < 2) {
                         currentSlot += 1;
                         currentSlot %= 2;
+                    }
+                    roll.push({
+                        start: time / 2,
+                        wide: 30,
+                        height: 0,
+                        outline: false,
+                        colour: "#7851a9",
+                        identifier: "switchGunSlots",
+                        priority: 1
+                    });
+                    roll.push({
+                        start: time / 2,
+                        wide: 30,
+                        height: 1,
+                        outline: false,
+                        colour: "#7851a9",
+                        identifier: "switchGunSlots",
+                        priority: 1
+                    });
+                    let n;
+                    for (let i = roll.length - 1; i > 0; i--) {
+                        if (roll[i].start + roll[i].wide > time / 2 && roll[i].height < 2) {
+                            let height = roll[i].height;
+                            height += 1;
+                            height %= 2;
+                            roll.push({
+                                start: time / 2,
+                                wide: roll[i].start + roll[i].wide - time / 2,
+                                height: height,
+                                outline: roll[i].outline,
+                                colour: roll[i].colour,
+                                identifier: roll[i].identifier,
+                                priority: roll[i].priority
+                            });
+                            roll[i].wide = time / 2 - roll[i].start + border * 2;
+                            n++;
+                        }
+                        if (n > 3) {
+                            break;
+                        }
                     }
                     break;
                 default:
@@ -266,7 +305,7 @@
                     outline: false,
                     colour: "#000000",
                     identifier: "shot",
-                    priority: 1
+                    priority: 2
                 });
             }
             roll.push({
@@ -276,7 +315,7 @@
                 outline: true,
                 colour: "#000000",
                 identifier: currentSlot,
-                priority: 1
+                priority: 2
             });
             if (currentSlot === 2) {
                 meleeDelay = slots[2].attackDelay;
@@ -396,7 +435,7 @@
 
             // Updates weapon and adds switch delays
             if (weaponNext !== undefined) {
-                let lastSlot = currentSlot;
+                const lastSlot = currentSlot;
                 currentSlot = weaponNext;
                 weaponsList.shift();
                 weaponsList.push(currentSlot);
@@ -411,15 +450,17 @@
                 }
                 if (currentSlot < 2) {
                     let delay;
+                    let priorityForThis = 2;
                     if (freeSwitchDelay > 0) {
                         delay = slots[currentSlot].switchDelay;
                     } else {
                         freeSwitchDelay = 1000;
-                        if ((slots[lastSlot].deployGroup !== undefined && slots[currentSlot].deployGroup !== undefined) && slots[lastSlot].deployGroup === slots[currentSlot].deployGroup) {
+                        if ((slots[lastSlot].deployGroup !== undefined && slots[currentSlot].deployGroup !== undefined) && (slots[lastSlot].deployGroup === slots[currentSlot].deployGroup) && currentDelay > 0) {
                             delay = slots[currentSlot].switchDelay;
                         } else {
                             delay = 250;
                             delayColour = "#00ff4c";
+                            priorityForThis = 3
                         }
                     }
                     currentDelay = delay;
@@ -430,7 +471,7 @@
                         outline: true,
                         colour: delayColour,
                         identifier: currentSlot,
-                        priority: 1
+                        priority: priorityForThis
                     });
                 } else if (currentSlot === 2) {
                     currentDelay = meleeDelay;
@@ -460,7 +501,7 @@
                                 outline: false,
                                 colour: "#000000",
                                 identifier: "shot",
-                                priority: 1
+                                priority: 2
                             });
                             throwablesUp = true;
                         }
@@ -556,7 +597,7 @@
             }
 
             // Draws Roll
-            let priorities = [];
+            priorities = [];
             for (let i = 0; i < priorityNum; i++) {
                 priorities.push([]);
             }
