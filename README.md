@@ -18,6 +18,7 @@ Each row is a weapon (primary, secondary, melee, throwables), and it is ordered 
 The bar in the middle is current time. 
 A black line that stretches from the bottom to the top of one row indicates an attack (shot/melee attack/throwable throw).  
 A solid black rectangle outlined in white (doesn't reach all the way to the top or bottom of the row) is a delay (either firing or switch). While this rectangle is over the bar, it means the delay is still going on, and you can't fire. If it is a green rectangle, it means that it is the 250ms `free switch` delay.  
+A purple line that stretches from the bottom to the top of both rows shows that the gun slots were switched here.  
 The grey background behind the delays shows where you've held your mouse down, regardless if it was on a delay (and didn't shoot) or not.
 
 # Keybinding
