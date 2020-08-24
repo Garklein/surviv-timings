@@ -22,10 +22,10 @@
         canvas.width = window.innerWidth;
 
         // slots
-        var primary, secondary, melee, throwable, slots, currentSlot, mousePosDown, firstClick, weaponNext, throwablesUp, weaponsList;
+        var primary, secondary, melee, throwable, slots, currentSlot, mousePosDown, firstClick, weaponNext, throwablesUp, weaponsList, mousePosLast;
 
         // delays
-        var currentDelay, meleeDelay, freeSwitchDelay;
+        var currentDelay, meleeDelay, freeSwitchDelay, lastFreeSwitchDelay;
 
         // keybinds
         var equipOtherGun, equipPreviousWeapon, equipNextWeapon, attack, stowWeapons, equipLastWeapon, switchGunSlots;
@@ -66,7 +66,7 @@
             attackDelay: 400,
             y: window.innerHeight / 16 * 13,
             bind: "4",
-            cook: 0.5
+            cook: 0.25
         };
         slots = [
             primary,
@@ -414,11 +414,23 @@
             }
 
             // Updates free switch delay
+            lastFreeSwitchDelay = freeSwitchDelay
             if (freeSwitchDelay > 0) {
                 freeSwitchDelay -= latestInterval;
             }
-            if (freeSwitchDelay < 0) {
-                freeSwitchDelay = 0;
+            if (freeSwitchDelay < 0 || lastFreeSwitchDelay - latestInterval === 0) {
+                freeSwitchDelay = 0; 
+                for (let i = 0; i < 4; i++) {
+                    roll.push({
+                        start: time / 2,
+                        wide: shotWidth,
+                        height: i,
+                        outline: false,
+                        colour: "#00ff4c",
+                        identifier: "freeSwitchMarker",
+                        priority: 2
+                    });
+                }
             }
             if (typeof freeSwitchDelay !== "number") {
                 freeSwitchDelay = 0;
@@ -527,6 +539,7 @@
             } else {
                 if (!throwablesUp) {
                     throwablesUp = true;
+                    console.log("shot")
                     shoot(((1 - throwable.cook) * throwable.attackDelay), true, time / 2 + currentDelay);
                 }
             }
@@ -560,6 +573,18 @@
                         priority: 0,
                         done: false
                     });
+                }
+            } else if (mousePosLast === true) {
+                for (let i = roll.length - 1; i >= 0; i--) {
+                    if (roll[i].identifier === "mouseDown"  && (roll[i].start + roll[i].wide + latestInterval) === time / 2) {
+                        if (roll[i].height === currentSlot) {
+                            roll[i].wide += latestInterval;
+                            break;
+                        } else if (!roll[i].done) {
+                            roll[i].wide += latestInterval;
+                            roll[i].done = true;
+                        }
+                    }
                 }
             }
 
@@ -637,6 +662,8 @@
             ctx.fillText(`Current free switch delay is ${freeSwitchDelay}`, window.innerWidth / 8 * 5, window.innerHeight / 4);
             ctx.font = `${ratio(44359.68)}px arial`;
             ctx.fillText(`${fps.fps} fps`, window.innerWidth / 60, window.innerHeight / 16);
+
+            mousePosLast = mousePosDown;
 
             requestAnimationFrame(mainLoop);
         }
