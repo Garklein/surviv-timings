@@ -94,7 +94,7 @@
 
         roll = [];
         time = 7000;   
-        newTime = new Date().getTime();
+        newTime = Date.now();
         shotWidth = 20;
         border = 10;
 
@@ -108,22 +108,20 @@
         
 
         // Stops things popping up on right click
-        window.addEventListener("contextmenu", function(contextBad) {
-            contextBad.preventDefault();
+        window.addEventListener("contextmenu", (context) => {
+            context.preventDefault();
         });
 
-        window.addEventListener("mousedown", function(click) {
-            if (click.button === 1) {
-                click.preventDefault();
-            };
+        window.addEventListener("mousedown", (click) => {
+            if (click.button === 1) click.preventDefault();
             processInput(processMouse(click));
         }, false);
 
         // Automatic weapon stuff
-        window.addEventListener("mouseup", function(click) {
+        window.addEventListener("mouseup", (click) => {
             processInputUp(processMouse(click)); 
         }, false);
-        window.addEventListener("keyup", function(key) {
+        window.addEventListener("keyup", (key) => {
             for (let i = 0; i < pressedKeys.length; i++) {
                 if (pressedKeys[i] == key.key) {
                     pressedKeys.splice(i, 1);
@@ -134,20 +132,14 @@
         }, false);
 
         function processInputUp(input) {
-            if (input === attack) {
-                mousePosDown = false;
-            } 
+            if (input === attack) mousePosDown = false;
         }
 
-        window.addEventListener("wheel", function(scroll) {
-            if (scroll.deltaY < 0) {
-                processInput("scrollUp");
-            } else {
-                processInput("scrollDown");
-            }
+        window.addEventListener("wheel", (scroll) => {
+            (scroll.deltaY < 0) ? processInput("scrollUp") : processInput("scrollDown");
         }, false);
 
-        window.addEventListener("resize", function(){
+        window.addEventListener("resize", () => {
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
             for (let i = 0; i < slots.length; i++) {
@@ -155,7 +147,7 @@
             }
         })
 
-        window.addEventListener("keydown", function(key) {
+        window.addEventListener("keydown", (key) => {
             processInput(key.key, true);
         }, false);
 
@@ -181,11 +173,7 @@
             }
             switch(input) {
                 case equipOtherGun:
-                    if (currentSlot !== 0) {
-                        weaponNext = 0;
-                    } else {
-                        weaponNext = 1;
-                    }
+                    (currentSlot !== 0) ? weaponNext = 0 : weaponNext = 1;
                     break;
                 case attack:
                     mousePosDown = true;
@@ -230,10 +218,7 @@
                     secondary = placeholder[1];
                     slots[0] = primary;
                     slots[1] = secondary;
-                    if (currentSlot < 2) {
-                        currentSlot += 1;
-                        currentSlot %= 2;
-                    }
+                    if (currentSlot < 2) currentSlot = (currentSlot + 1) % 2;
                     roll.push({
                         start: time / 2,
                         wide: 30,
@@ -283,9 +268,7 @@
                     }
                 }
             }
-            if (isKey) {
-                pressedKeys.push(input);
-            }
+            if (isKey) pressedKeys.push(input);
         }
 
         function shoot(delay, shoot, timeDelay) {
@@ -317,13 +300,11 @@
                 identifier: currentSlot,
                 priority: 2
             });
-            if (currentSlot === 2) {
-                meleeDelay = slots[2].attackDelay;
-            }
+            if (currentSlot === 2) meleeDelay = slots[2].attackDelay;
         }
 
         function ratio(divisor) {
-            if (divisor === 0) {
+            if (!divisor) {
                 return 0;
             } else {
                 return window.innerHeight * window.innerWidth / divisor;
@@ -392,7 +373,8 @@
                     outline: false,
                     colour: "#00ff4c",
                     identifier: "freeSwitchMarker",
-                    priority: 2
+                    priority: 3,
+                    opacity: 0.8
                 });
             }
         }
@@ -403,7 +385,7 @@
 
             // Find timce since last frame
             oldTime = newTime;
-            newTime = new Date().getTime();
+            newTime = Date.now();
             latestInterval = (newTime - oldTime);
 
             // Update current delay
@@ -448,7 +430,7 @@
                 weaponsList.push(currentSlot);
                 weaponNext = undefined;
                 delayColour = "#000000";
-                if (currentSlot < 2 || currentSlot === 3) {
+                if (currentSlot !== 2) {
                     for (let i = roll.length - 1; i >= 0; i--) {
                         if (roll[i].identifier === currentSlot && roll[i].start + roll[i].wide > time / 2) {
                             roll[i].wide = time / 2 - roll[i].start + border;
@@ -482,14 +464,10 @@
                     });
                 } else if (currentSlot === 2) {
                     currentDelay = meleeDelay;
-                    if (freeSwitchDelay === 0) {
-                        setFreeSwitch();
-                    }
+                    if (!freeSwitchDelay) setFreeSwitch();
                 } else if (currentSlot === 3) {
                     currentDelay = 0;
-                    if (freeSwitchDelay === 0) {
-                        setFreeSwitch();
-                    }
+                    if (!freeSwitchDelay) setFreeSwitch();
                 }
                 if (lastSlot === 3) {
                     for (let i = roll.length - 1; i > 0; i--) {
@@ -518,18 +496,12 @@
 
             // Check if should shoot
             if (mousePosDown) {
-                if (currentDelay === 0) {
-                    if (currentSlot === 3) {
-                        if (throwablesUp && firstClick) {
-                            throwablesUp = false;
-                            shoot(throwable.cook * throwable.attackDelay, false);
-                        }
+                if (!currentDelay) {
+                    if (currentSlot === 3 && throwablesUp && firstClick) {
+                        throwablesUp = false;
+                        shoot(throwable.cook * throwable.attackDelay, false);
                     }
-                    if (slots[currentSlot].automatic || firstClick) {
-                        if (currentSlot !== 3) {
-                            shoot(slots[currentSlot].attackDelay);
-                        } 
-                    }
+                    if ((slots[currentSlot].automatic || firstClick) && currentSlot !== 3) shoot(slots[currentSlot].attackDelay);
                 }
             } else {
                 if (!throwablesUp) {
@@ -538,9 +510,7 @@
                     shoot(((1 - throwable.cook) * throwable.attackDelay), true, time / 2 + currentDelay);
                 }
             }
-            if (firstClick) {
-                firstClick = false;
-            }
+            if (firstClick) firstClick = false;
 
             // Does the mousedown roll
             if (mousePosDown) {
@@ -627,12 +597,23 @@
             for (let i = 0; i < priorityNum; i++) {
                 for (let n = 0; n < priorities[i].length; n++) {
                     ctx.fillStyle = roll[priorities[i][n]].colour;
-                    if (!roll[priorities[i][n]].outline) {
-                        ctx.fillRect(roll[priorities[i][n]].start * window.innerWidth / time, slots[roll[priorities[i][n]].height].y, roll[priorities[i][n]].wide * window.innerWidth / time, window.innerHeight / 16,);
-                    }
+                    if (roll[priorities[i][n]].opacity) ctx.globalAlpha = roll[priorities[i][n]].opacity;
                     if (roll[priorities[i][n]].outline) {
-                        ctx.fillRect((roll[priorities[i][n]].start * window.innerWidth / time) + (border / 2), slots[roll[priorities[i][n]].height].y + (border / 2), (roll[priorities[i][n]].wide * window.innerWidth / time) - border, (window.innerHeight / 16) - border);
+                        ctx.fillRect(
+                            (roll[priorities[i][n]].start * window.innerWidth / time) + (border / 2), 
+                            slots[roll[priorities[i][n]].height].y + (border / 2), 
+                            (roll[priorities[i][n]].wide * window.innerWidth / time) - border, 
+                            (window.innerHeight / 16) - border
+                        );
+                    } else {
+                        ctx.fillRect(
+                            roll[priorities[i][n]].start * window.innerWidth / time, 
+                            slots[roll[priorities[i][n]].height].y, 
+                            roll[priorities[i][n]].wide * window.innerWidth / time, 
+                            window.innerHeight / 16
+                        );
                     }
+                    if (roll[priorities[i][n]].opacity) ctx.globalAlpha = 1;
                 }
             }
 
