@@ -25,7 +25,7 @@
         var primary, secondary, melee, throwable, slots, currentSlot, mousePosDown, firstClick, weaponNext, throwablesUp, weaponsList, mousePosLast;
 
         // delays
-        var currentDelay, meleeDelay, freeSwitchDelay, lastFreeSwitchDelay;
+        var currentDelay, meleeDelay, freeSwitchDelay;
 
         // keybinds
         var equipOtherGun, equipPreviousWeapon, equipNextWeapon, attack, stowWeapons, equipLastWeapon, switchGunSlots;
@@ -382,6 +382,21 @@
             console.log(`   Cook part is ${throwable.cook}`);
         }
 
+        function setFreeSwitch() {
+            freeSwitchDelay = 1000;
+            for (let i = 0; i < 4; i++) {
+                roll.push({
+                    start: time / 2 + 1000,
+                    wide: shotWidth,
+                    height: i,
+                    outline: false,
+                    colour: "#00ff4c",
+                    identifier: "freeSwitchMarker",
+                    priority: 2
+                });
+            }
+        }
+
         function mainLoop() {
             // Clear canvas
             ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
@@ -414,27 +429,7 @@
             }
 
             // Updates free switch delay
-            lastFreeSwitchDelay = freeSwitchDelay
-            if (freeSwitchDelay > 0) {
-                freeSwitchDelay -= latestInterval;
-            }
-            if (freeSwitchDelay < 0 || lastFreeSwitchDelay - latestInterval === 0) {
-                freeSwitchDelay = 0; 
-                for (let i = 0; i < 4; i++) {
-                    roll.push({
-                        start: time / 2,
-                        wide: shotWidth,
-                        height: i,
-                        outline: false,
-                        colour: "#00ff4c",
-                        identifier: "freeSwitchMarker",
-                        priority: 2
-                    });
-                }
-            }
-            if (typeof freeSwitchDelay !== "number") {
-                freeSwitchDelay = 0;
-            }
+            freeSwitchDelay = Math.max(0, freeSwitchDelay - latestInterval);
 
             // Updates roll
             for (let i = 0; i < roll.length; i++) {
@@ -466,7 +461,7 @@
                     if (freeSwitchDelay > 0) {
                         delay = slots[currentSlot].switchDelay;
                     } else {
-                        freeSwitchDelay = 1000;
+                        setFreeSwitch();
                         if ((slots[lastSlot].deployGroup !== undefined && slots[currentSlot].deployGroup !== undefined) && (slots[lastSlot].deployGroup === slots[currentSlot].deployGroup) && currentDelay > 0) {
                             delay = slots[currentSlot].switchDelay;
                         } else {
@@ -488,12 +483,12 @@
                 } else if (currentSlot === 2) {
                     currentDelay = meleeDelay;
                     if (freeSwitchDelay === 0) {
-                        freeSwitchDelay = 1000;
+                        setFreeSwitch();
                     }
                 } else if (currentSlot === 3) {
                     currentDelay = 0;
                     if (freeSwitchDelay === 0) {
-                        freeSwitchDelay = 1000;
+                        setFreeSwitch();
                     }
                 }
                 if (lastSlot === 3) {
