@@ -11,7 +11,7 @@ Here will be instructions on how to use [this project](https://garklein.github.i
 * Throwables are also not affected by free switches
 Now, on to instructions:
 
-# What does all these weird rectangles mean?
+# What do all these weird rectangles mean?
 
 Current weapon delay, free switch delay and fps are self-explanatory. On the bottom, you can see 4 rows, with a bar and a square in the middle. This shows all your inputs and their consequences (this project was originally meant to be a way to practice underclock, and the bottom part was originally for seeing what was going wrong if it didn't work).  
 Each row is a weapon (primary, secondary, melee, throwables), and it is ordered in the same way as surviv.io.  
