@@ -388,29 +388,9 @@
             newTime = Date.now();
             latestInterval = (newTime - oldTime);
 
-            // Update current delay
-            if (currentDelay > 0) {
-                currentDelay -= latestInterval;
-            }
-            if (currentDelay < 0) {
-                currentDelay = 0;
-            }
-            if (typeof currentDelay !== "number") {
-                currentDelay = 0;
-            }
-
-            // Updates melee delay
-            if (meleeDelay > 0) {
-                meleeDelay -= latestInterval;
-            }
-            if (meleeDelay < 0) {
-                meleeDelay = 0;
-            }
-            if (typeof meleeDelay !== "number") {
-                meleeDelay = 0;
-            }
-
-            // Updates free switch delay
+            // Updates delays
+            currentDelay = Math.max(0, currentDelay - latestInterval);
+            meleeDelay = Math.max(0, meleeDelay - latestInterval);
             freeSwitchDelay = Math.max(0, freeSwitchDelay - latestInterval);
 
             // Updates roll
