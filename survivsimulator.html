@@ -444,7 +444,7 @@
                         delay = slots[currentSlot].switchDelay;
                     } else {
                         setFreeSwitch();
-                        if ((slots[lastSlot].deployGroup !== undefined && slots[currentSlot].deployGroup !== undefined) && (slots[lastSlot].deployGroup === slots[currentSlot].deployGroup) && currentDelay > 0) {
+                        if ((slots[lastSlot].deployGroup !== undefined) && (slots[lastSlot].deployGroup === slots[currentSlot].deployGroup) && currentDelay > 0) {
                             delay = slots[currentSlot].switchDelay;
                         } else {
                             delay = 250;
