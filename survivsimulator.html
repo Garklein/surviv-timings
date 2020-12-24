@@ -82,7 +82,7 @@
 
         currentDelay = 0;
         meleeDelay = 0;
-        freeSwitchDelay = 0; 
+        freeSwitchDelay = 0;
 
         equipOtherGun = " ";
         equipPreviousWeapon = "scrollUp";
@@ -93,7 +93,7 @@
         switchGunSlots = "t";
 
         roll = [];
-        time = 7000;   
+        time = 7000;
         newTime = Date.now();
         shotWidth = 20;
         border = 10;
@@ -105,7 +105,7 @@
             fps: 0
         };
         priorityNum = 4;
-        
+
 
         // Stops things popping up on right click
         window.addEventListener("contextmenu", (context) => {
@@ -119,7 +119,7 @@
 
         // Automatic weapon stuff
         window.addEventListener("mouseup", (click) => {
-            processInputUp(processMouse(click)); 
+            processInputUp(processMouse(click));
         }, false);
         window.addEventListener("keyup", (key) => {
             for (let i = 0; i < pressedKeys.length; i++) {
@@ -160,9 +160,9 @@
                     mouseButton = "middleMouse";
                     break;
                 case 2:
-                    mouseButton ="rightMouse";             
+                    mouseButton = "rightMouse";
             }
-            return(mouseButton);
+            return (mouseButton);
         }
 
         function processInput(input, isKey) {
@@ -171,7 +171,7 @@
                     return;
                 }
             }
-            switch(input) {
+            switch (input) {
                 case equipOtherGun:
                     weaponNext = currentSlot ? 0 : 1;
                     break;
@@ -192,7 +192,7 @@
                     weaponNext = weaponsList[0];
                     break;
                 case switchGunSlots:
-                    const placeholder = [ 
+                    const placeholder = [
                         {
                             attackDelay: secondary.attackDelay,
                             switchDelay: secondary.switchDelay,
@@ -262,11 +262,11 @@
                     break;
                 default:
                     for (let i = 0; i < slots.length; i++) {
-                    if (input === slots[i].bind && currentSlot !== i) {
-                        weaponNext = i;
-                        return;
+                        if (input === slots[i].bind && currentSlot !== i) {
+                            weaponNext = i;
+                            return;
+                        }
                     }
-                }
             }
             if (isKey) pressedKeys.push(input);
         }
@@ -516,7 +516,7 @@
             if (mousePosDown) {
                 let n = 0;
                 for (let i = roll.length - 1; i >= 0; i--) {
-                    if (roll[i].identifier === "mouseDown"  && (roll[i].start + roll[i].wide + latestInterval) === time / 2) {
+                    if (roll[i].identifier === "mouseDown" && (roll[i].start + roll[i].wide + latestInterval) === time / 2) {
                         if (roll[i].height === currentSlot) {
                             roll[i].wide += latestInterval;
                             n++;
@@ -541,7 +541,7 @@
                 }
             } else if (mousePosLast === true) {
                 for (let i = roll.length - 1; i >= 0; i--) {
-                    if (roll[i].identifier === "mouseDown"  && (roll[i].start + roll[i].wide + latestInterval) === time / 2) {
+                    if (roll[i].identifier === "mouseDown" && (roll[i].start + roll[i].wide + latestInterval) === time / 2) {
                         if (roll[i].height === currentSlot) {
                             roll[i].wide += latestInterval;
                             break;
@@ -556,7 +556,7 @@
             // Fps counter stuff
             fps.total += latestInterval;
             fps.frames++;
-            if(fps.total >= 1000) {
+            if (fps.total >= 1000) {
                 fps.fps = fps.frames;
                 fps.total = 0;
                 fps.frames = 0;
@@ -600,16 +600,16 @@
                     if (roll[priorities[i][n]].opacity) ctx.globalAlpha = roll[priorities[i][n]].opacity;
                     if (roll[priorities[i][n]].outline) {
                         ctx.fillRect(
-                            (roll[priorities[i][n]].start * window.innerWidth / time) + (border / 2), 
-                            slots[roll[priorities[i][n]].height].y + (border / 2), 
-                            (roll[priorities[i][n]].wide * window.innerWidth / time) - border, 
+                            (roll[priorities[i][n]].start * window.innerWidth / time) + (border / 2),
+                            slots[roll[priorities[i][n]].height].y + (border / 2),
+                            (roll[priorities[i][n]].wide * window.innerWidth / time) - border,
                             (window.innerHeight / 16) - border
                         );
                     } else {
                         ctx.fillRect(
-                            roll[priorities[i][n]].start * window.innerWidth / time, 
-                            slots[roll[priorities[i][n]].height].y, 
-                            roll[priorities[i][n]].wide * window.innerWidth / time, 
+                            roll[priorities[i][n]].start * window.innerWidth / time,
+                            slots[roll[priorities[i][n]].height].y,
+                            roll[priorities[i][n]].wide * window.innerWidth / time,
                             window.innerHeight / 16
                         );
                     }
