@@ -8,7 +8,8 @@ Here will be instructions on how to use [this project](https://garklein.github.i
 * On a `free switch`, you can fire after 250ms *unless* the `deploy groups` of your current weapon and the weapon that was switched from match
 * If there is no `free switch`, or the `deploy groups` of your previous and current weapon match, your current weapon's `switch delay` is used
 * `Free switches` do not affect melee, melee just has a (version of) `shot delay` and no `switch delay`
-* Throwables are also not affected by free switches
+* Throwables are also not affected by free switches  
+  
 Now, on to instructions:
 
 # What do all these weird rectangles mean?
