@@ -34,7 +34,7 @@
         var roll, time, newTime, oldTime, latestInterval, shotWidth, border, priorities;
 
         // misc
-        var pressedKeys, fps, priorityNum;
+        var pressedKeys, fps, priorityNum, shots;
 
         primary = {
             attackDelay: 900,
@@ -105,6 +105,7 @@
             fps: 0
         };
         priorityNum = 4;
+        shots = [];
 
 
         // Stops things popping up on right click
@@ -300,6 +301,7 @@
                 identifier: currentSlot,
                 priority: 2
             });
+            if (currentSlot === 0 || currentSlot === 1) shots.push(0.5 + ratio(36966.4) / window.innerWidth);
             if (currentSlot === 2) meleeDelay = slots[2].attackDelay;
         }
 
@@ -486,7 +488,6 @@
             } else {
                 if (!throwablesUp) {
                     throwablesUp = true;
-                    console.log("shot")
                     shoot(((1 - throwable.cook) * throwable.attackDelay), true, time / 2 + currentDelay);
                 }
             }
@@ -565,6 +566,18 @@
                         hands(ratio(slots[currentSlot].hands[i][0]), ratio(slots[currentSlot].hands[i][1]));
                     }
             }
+
+            // Draws shots
+            shots.forEach((shot, i) => {
+                ctx.fillRect(
+                    shot * window.innerWidth, 
+                    window.innerHeight / 4 - 5 * 1000 / window.innerWidth, 
+                    20 * 1000 / window.innerWidth, 
+                    10 * 1000 / window.innerWidth
+                );
+                shots[i] += 0.01;  
+                if (shot > 1) shots.splice(i, 1);
+            });
 
             // Draws Roll
             priorities = [];
